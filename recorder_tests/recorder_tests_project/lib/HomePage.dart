@@ -3,6 +3,7 @@ import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'recorder.dart';
+import 'SignalProcessing.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -21,6 +22,7 @@ class _HomePageState extends State<HomePage> {
   String audioPath = '';
   int recNum = 0;
   Recorder recorder = Recorder();
+  SignalProcessing signalProcessing = SignalProcessing();
 
   Future<String> get dirPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -51,6 +53,8 @@ class _HomePageState extends State<HomePage> {
         recNum = await recorder.startRecording(audioRecord, audioPath, recNum);
         await Future.delayed(const Duration(seconds: 1));
         await recorder.stopRecording(audioRecord);
+        // Call TNS function here
+        signalProcessing.startProcess(await dirPath,recNum);
       }
       audioPath = await dirPath;
       audioPath += "/rec";
