@@ -20,7 +20,7 @@ class SignalProcessing {
 
     // Read the audio file data
     List<Float64List> data = await readWavData();
-   
+
     // Convert the data to Array type
     // readWavData() returns a List<Float64List> type that needs to be converted to ArrayComplexe type
     //ArrayComplex audioDataComplexe = await convertToArrayComplexType(data);
