@@ -23,8 +23,7 @@ class Recorder {
         audioPath +=  recNum.toString();
         audioPath += ".wav";
         print("record $recNum started");
-        await audioRecord.start(const RecordConfig(encoder: AudioEncoder.wav), path: audioPath);
-        print(audioPath);
+        await audioRecord.start(const RecordConfig(encoder: AudioEncoder.wav,numChannels: 1), path: audioPath);
       }
     } catch (e) {
       print('erreur de démarrage d"enregistrage : $e');
