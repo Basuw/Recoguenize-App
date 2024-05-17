@@ -104,6 +104,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> playKendji() async {
+    try {
+      await audioPlayer.play(AssetSource('Kendji-Girac-Cool-_4_.wav'));
+    } catch (e) {
+      print('error de playage : $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -127,6 +135,10 @@ class _HomePageState extends State<HomePage> {
             ),
             Text(
                 "$recNum"
+            ),
+            ElevatedButton(
+              onPressed: playKendji,
+                child: const Text('Play Kendji'),
             ),
             if (!isGlobalRecording)
               ElevatedButton(
