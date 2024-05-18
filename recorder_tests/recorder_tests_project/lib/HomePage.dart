@@ -51,7 +51,7 @@ class _HomePageState extends State<HomePage> {
       });
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecord, audioPath, recNum);
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 10));
         await recorder.stopRecording(audioRecord);
         // Call TNS function here
         signalProcessing.startProcess(await dirPath,recNum);
