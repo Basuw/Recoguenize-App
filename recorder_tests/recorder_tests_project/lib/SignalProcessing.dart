@@ -32,9 +32,9 @@ class SignalProcessing {
 
     // Convert the data to Array type
     // readWavData() returns a List<Float64List> type that needs to be converted to ArrayComplexe type
-    ArrayComplex audioDataComplexe = await convertToArrayComplexType(sampleDouble);
+    //ArrayComplex audioDataComplexe = await convertToArrayComplexType(sampleDouble);
     //Perform FFT on the audio data
-    ArrayComplex spectroData = await performFFT(audioDataComplexe);
+    //ArrayComplex spectroData = await performFFT(audioDataComplexe);
 
 
   }
