@@ -14,18 +14,16 @@ class SignalProcessing {
 
   Future<void> startProcess(String dirPath,int recNum) async {
 
+    print("process $recNum started");
 
     audioPath = dirPath;
     audioPath += "/rec";
     audioPath +=  recNum.toString();
     audioPath += ".wav";
 
-    File file = File(audioPath);
-    Uint8List bytes = await file.readAsBytes();
-    List<int> sample = extractSamples(bytes);
-    List<double> sampleDouble = convertIntListToDoubleList(sample);
+    List<double> sampleDouble = await readWavData();
 
-    print("process $recNum started");
+
 
     // Read the audio file data
     //List<Float64List> data = await readWavData();
@@ -39,7 +37,7 @@ class SignalProcessing {
 
   }
 
-  List<int> extractSamples(Uint8List bytes) {
+  Future<List<int>> extractSamples(Uint8List bytes) async {
     // L'entête WAV est de 44 bytes, les échantillons commencent donc à l'offset 44
     const int headerSize = 44;
     List<int> samples = [];
@@ -56,12 +54,22 @@ class SignalProcessing {
     return samples;
   }
 
-  List<double> convertIntListToDoubleList(List<int> intList) {
+  Future<List<double>> convertIntListToDoubleList(List<int> intList) async {
     return intList.map((e) => e.toDouble()).toList();
   }
 
-  Future<List<Float64List>> readWavData() async
-  => readRawAudioFile(audioPath, 1,WavFormat.pcm16bit);
+  Future<List<double>> readWavData() async {
+    File file = File(audioPath);
+    Uint8List bytes = file.readAsBytesSync();
+
+    print(bytes);
+
+    List<int> sample = await extractSamples(bytes);
+
+    List<double> sampleDouble = await convertIntListToDoubleList(sample);
+
+    return sampleDouble;
+  }
 
   Future<ArrayComplex> convertToArrayComplexType(List<double> data) async {
     Array audioData = Array(data);

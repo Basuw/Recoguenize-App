@@ -5,14 +5,11 @@ import 'package:record/record.dart';
 
 class Recorder {
 
-
   Future<String> get dirPath async {
     final directory = await getApplicationDocumentsDirectory();
 
     return directory.path;
   }
-
-
 
   Future<int> startRecording(AudioRecorder audioRecord, String audioPath, int recNum) async {
     try {
@@ -23,7 +20,7 @@ class Recorder {
         audioPath +=  recNum.toString();
         audioPath += ".wav";
         print("record $recNum started");
-        await audioRecord.start(const RecordConfig(encoder: AudioEncoder.pcm16bits,numChannels: 1), path: audioPath);
+        await audioRecord.start(const RecordConfig(encoder: AudioEncoder.wav,numChannels: 1), path: audioPath);
       }
     } catch (e) {
       print('erreur de démarrage d"enregistrage : $e');

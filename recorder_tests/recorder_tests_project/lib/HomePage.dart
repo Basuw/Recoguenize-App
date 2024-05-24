@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:audioplayers/audioplayers.dart';
@@ -23,6 +25,8 @@ class _HomePageState extends State<HomePage> {
   int recNum = 0;
   Recorder recorder = Recorder();
   SignalProcessing signalProcessing = SignalProcessing();
+  //del function
+  late File file;
 
   Future<String> get dirPath async {
     final directory = await getApplicationDocumentsDirectory();
@@ -51,7 +55,7 @@ class _HomePageState extends State<HomePage> {
       });
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecord, audioPath, recNum);
-        await Future.delayed(const Duration(seconds: 10));
+        await Future.delayed(const Duration(seconds: 1));
         await recorder.stopRecording(audioRecord);
         // Call TNS function here
         signalProcessing.startProcess(await dirPath,recNum);
@@ -116,6 +120,18 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> deleteRecords() async {
+    String filePath = await dirPath;
+    int delRecNum = 0;
+    filePath += "/rec";
+    file = File(filePath + delRecNum.toString() + ".wav");
+    while(await file.exists()){
+      await file.delete();
+      recNum++;
+      file = File(filePath + delRecNum.toString() + ".wav");
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -143,6 +159,10 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
               onPressed: playKendji,
                 child: const Text('Play Kendji'),
+            ),
+            ElevatedButton(
+              onPressed: deleteRecords,
+              child: const Text('Delete Records'),
             ),
             if (!isGlobalRecording)
               ElevatedButton(
