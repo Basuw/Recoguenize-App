@@ -1,11 +1,8 @@
 import 'dart:typed_data';
 import 'package:scidart/numdart.dart';
-import 'package:wav/raw_file.dart';
-import 'package:wav/wav.dart';
-import 'package:wav/wav_io.dart';
 import 'package:scidart/scidart.dart';
 import 'dart:io';
-import 'package:flutter_sound/flutter_sound.dart';
+
 
 
 class SignalProcessing {
