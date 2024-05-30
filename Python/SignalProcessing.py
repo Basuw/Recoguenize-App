@@ -35,5 +35,26 @@ def create_peak_constellation(audio_data, Fs):
     
     return constellation_map
 
-Fs, data = read("Documents/rec1.wav")
-constellation = create_peak_constellation(data,Fs)
+def create_hashes(constellation_map):
+    upper_frequency = 23_000
+    frequency_bits = 10
+    hashes = []
+
+    # On parcourt la constellation pour créer les hashs
+    for idx, (time, freq) in enumerate(constellation_map):
+        # On compare chaque pic avec le pic suivant
+        for other_time, other_freq in constellation_map[idx : idx + 1]:
+            diff = other_time - time
+            
+            # On ne prend pas en compte les pics qui sont trop proches 
+            if diff >= 1:
+                continue
+
+            # On convertit les fréquences en valeurs binaires
+            freq_binned = freq / upper_frequency * (2 ** frequency_bits)
+            other_freq_binned = other_freq / upper_frequency * (2 ** frequency_bits)
+
+            # On crée le hash sur 32 bits
+            hash = int(freq_binned) | (int(other_freq_binned) << 10) | (int(diff) << 20)
+            hashes.append(hash)
+    return hashes
