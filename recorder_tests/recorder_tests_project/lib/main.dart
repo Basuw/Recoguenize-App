@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:recorder_tests_project/RecordPage.dart';
 import 'HomePage.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(title: 'Flutter Demo Home Page'),
+      home: const RecordPage(title: 'Flutter Demo Home Page'),
     );
   }
 }
