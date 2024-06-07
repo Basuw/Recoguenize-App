@@ -22,6 +22,10 @@ class _HomePageState extends State<HomePage> {
   String audioPath = '';
   int recNum = 0;
   Recorder recorder = Recorder();
+<<<<<<< HEAD
+=======
+  //SignalProcessing signalProcessing = SignalProcessing();
+>>>>>>> f747b809810ab7d0bcb0c9162fc463a99df93c28
   //del function
   late File file;
 
@@ -54,7 +58,13 @@ class _HomePageState extends State<HomePage> {
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecorder, audioPath, recNum);
         await Future.delayed(const Duration(seconds: 1));
+<<<<<<< HEAD
         await recorder.stopRecording(audioRecorder);
+=======
+        await recorder.stopRecording(audioRecord);
+        // Call TNS function here
+        //signalProcessing.startProcess(await dirPath,recNum);
+>>>>>>> f747b809810ab7d0bcb0c9162fc463a99df93c28
       }
       audioPath = await dirPath;
       audioPath += "/rec";
