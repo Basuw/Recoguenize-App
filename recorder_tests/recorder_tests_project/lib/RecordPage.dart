@@ -76,7 +76,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       });
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecord, audioPath, recNum);
-        await Future.delayed(const Duration(milliseconds: 2000));
+        await Future.delayed(const Duration(milliseconds: 1000));
         await recorder.stopRecording(audioRecord);
         print("boucle "+recNum.toString());
       }
@@ -99,7 +99,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
 
 
     Uint8List inwav = await recorder.loadWavFileAsBytes("assets/Kendji-Girac-Cool-_1_.wav");
-    print(inwav);
+    print(inwav.length);
 
   }
 

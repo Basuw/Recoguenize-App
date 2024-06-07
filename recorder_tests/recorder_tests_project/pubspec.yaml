@@ -38,11 +38,8 @@ dependencies:
   flutter_sound: ^9.4.18
   audioplayers: ^6.0.0
   path_provider: ^2.1.2
-<<<<<<< HEAD
   avatar_glow: ^2.0.2
   permission_handler: ^10.0.0
-=======
->>>>>>> f747b809810ab7d0bcb0c9162fc463a99df93c28
 
 
 dev_dependencies:
