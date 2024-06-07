@@ -151,9 +151,9 @@ def get_song_info(song_id):
     else:
         return None
 
-def start_process(choice = 0):
+def start_process(audioPath,choice = 0):
     # Si choice = 0, on fonctionne en comparaison
-    Fs, data = read("../Documents/gitano.wav")
+    Fs, data = read(audioPath)
     constellation = create_peak_constellation(data,Fs)
     data = create_data(constellation)
     
@@ -168,8 +168,6 @@ def start_process(choice = 0):
     if choice == 0:
         histograms = create_histograms(all_responses)
         best_match = find_best_match(histograms)
-        
-        # song_info = get_song_info(best_match)
+        song_info = get_song_info(best_match)
 
-    #return song_info
-    return best_match
+    return song_info
