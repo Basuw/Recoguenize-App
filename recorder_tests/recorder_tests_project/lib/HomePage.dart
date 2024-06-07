@@ -1,9 +1,16 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'customPopup/custom_dialog_widget.dart';
 import 'recorder.dart';
+import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -103,6 +110,41 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> callBackend(BuildContext context) async {
+    final response = await http.get(Uri.parse("http://51.120.246.62:8080/song/5"));
+
+    if(response.statusCode == 200) {
+      Map<String, dynamic> data = jsonDecode(response.body);
+      print(data);
+
+      String titre = data["title"];
+      String artist = data["artists"][0]["name"];
+
+      showDialog(
+        context: context,
+        builder: (context) => CustomDialogWidget(titre: titre, artiste: artist),
+      );
+
+    }
+    else {
+      print("ERROR API");
+    }
+
+  }
+
+
+  Future<void> callBackend2() async {
+
+    var request = http.MultipartRequest('POST', Uri.parse('https://51.120.246.62:8000/upload-audio'));
+
+    request.files.add(await http.MultipartFile.fromPath('audio', 'rec1.wav'));
+    request.fields['name'] = 'kendji de ses morts';
+
+    var response = await request.send();
+    print(response.statusCode);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,11 +177,25 @@ class _HomePageState extends State<HomePage> {
               onPressed: deleteRecords,
               child: const Text('Delete Records'),
             ),
-            if (!isGlobalRecording)
+            if (!isGlobalRecording)(
               ElevatedButton(
                 onPressed: playRecording,
                 child: const Text('Play Recording'),
               )
+            ),
+            ElevatedButton(
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) => CustomDialogWidget(titre: '', artiste: '',),
+                );
+              },
+              child: const Text("popup song"),
+            ),
+            ElevatedButton(
+                onPressed: () => {callBackend2()},
+                child: const Text("callAPI")
+            ),
           ],
         ),
       ),

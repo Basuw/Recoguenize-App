@@ -29,7 +29,7 @@ class Recorder {
         audioPath +=  recNum.toString();
         audioPath += ".wav";
         print("record $recNum started");
-        await audioRecord.startRecorder(toFile: audioPath, codec: Codec.pcm16WAV);
+        await audioRecord.startRecorder(toFile: audioPath, codec: Codec.pcm16WAV, sampleRate: 44100, numChannels: 1);
         //await audioRecord.start(const RecordConfig(encoder: AudioEncoder.wav,numChannels: 1), path: audioPath);
       }
     } catch (e) {
