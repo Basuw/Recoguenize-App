@@ -171,3 +171,7 @@ def start_process(audioPath,choice = 0):
         song_info = get_song_info(best_match)
 
     return song_info
+
+def hello_world():
+    print("Hello World")
+    return "Hello World"
