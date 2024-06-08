@@ -97,10 +97,6 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       isGlobalRecording = false;
     });
 
-
-    Uint8List inwav = await recorder.loadWavFileAsBytes("assets/Kendji-Girac-Cool-_1_.wav");
-    print(inwav.length);
-
   }
 
   Future<void> tapDetection(TapDownDetails details) async {
