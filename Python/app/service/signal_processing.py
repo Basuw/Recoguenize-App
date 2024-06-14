@@ -151,5 +151,6 @@ def start_process(audioPath,choice=0):
     histograms = create_histograms(all_responses)
     best_match = find_best_match(histograms)
     song_info = get_song_info(best_match)
+    print(song_info)
 
     return song_info

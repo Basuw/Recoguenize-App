@@ -35,7 +35,7 @@ def json_to_wav(json_path, output_wav_path):
         print(f"Error: {str(e)}")
 
 # Example usage:
-json_input_path = '/Users/bastienjacquelin/Documents/Projects/SAE/recoguenize_app/Python/app/service/samples/temp_audio_data.json'
-wav_output_path = '/Users/bastienjacquelin/Documents/Projects/SAE/recoguenize_app/Python/app/service/samples/temp_audio_data.json/music/output.wav'
+# json_input_path = '/Users/bastienjacquelin/Documents/Projects/SAE/recoguenize_app/Python/app/service/samples/temp_audio_data.json'
+# wav_output_path = '/Users/bastienjacquelin/Documents/Projects/SAE/recoguenize_app/Python/app/service/samples/temp_audio_data.json/music/output.wav'
 
-json_to_wav(json_input_path, wav_output_path)
+# json_to_wav(json_input_path, wav_output_path)

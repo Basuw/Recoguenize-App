@@ -23,22 +23,11 @@ JSON_TO_WAV = 'json_to_wav.py'
 # Import de la fonction de conversion
 from json_to_wav import json_to_wav
 
-# Définir le modèle de données
-class Item(BaseModel):
-    data: dict
-
-class AudioData(BaseModel):
-    audio_data: str
-    sample_rate: int
-    channels: int
-    sample_width: int
-    
 class AudioRequest(BaseModel):
     sample_rate: int
     channels: int
     audio: list
     name:str
-    base:str
 
 class Name(BaseModel):
     name: str
@@ -48,13 +37,6 @@ class Name(BaseModel):
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
-
-@app.post("/upload-audio/")
-async def upload_json(file: UploadFile = File(...)):
-    file_location = os.path.join(UPLOAD_FOLDER, file.filename)
-    with open(file_location, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    return {"info": f"file '{file.filename}' saved at '{file_location}'"}
 
 @app.post("/upload-json/")
 async def save_json(audio_data: AudioRequest):
