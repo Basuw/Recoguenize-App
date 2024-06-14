@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   String audioPath = '';
   int recNum = 0;
   Recorder recorder = Recorder();
+  File? _audioFile;
 
   //del function
   late File file;
@@ -38,6 +39,37 @@ class _HomePageState extends State<HomePage> {
 
     return directory.path;
   }
+
+  Future<void> _loadAudioFile() async {
+    final ByteData data = await rootBundle.load('assets/Kendji-Girac-Cool-_4_.wav');
+    final Directory tempDir = await getTemporaryDirectory();
+    final File tempFile = File('${tempDir.path}/Kendji-Girac-Cool-_4_.wav');
+    await tempFile.writeAsBytes(data.buffer.asUint8List(), flush: true);
+    setState(() {
+      _audioFile = tempFile;
+    });
+  }
+
+  Future<String> getFilePath(String fileName) async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    String filePath = '${directory.path}/$fileName';
+    return filePath;
+  }
+
+  Future<Uint8List> readAudioFileAsBytes(String fileName) async {
+    try {
+      String filePath = await getFilePath(fileName);
+      File audioFile = File(filePath);
+      Uint8List fileBytes = await audioFile.readAsBytes();
+      return fileBytes;
+    } 
+    catch (e) {
+      print("Error reading audio file: $e");
+      return Uint8List(0);
+    }
+  }
+
+
 
   @override
   void initState() {
@@ -61,7 +93,7 @@ class _HomePageState extends State<HomePage> {
       print("start");
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecorder, audioPath, recNum);
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 10));
         await recorder.stopRecording(audioRecorder);
       }
       audioPath = await dirPath;
@@ -111,6 +143,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> callBackend(BuildContext context) async {
+    print("call api");
     final response = await http.get(Uri.parse("http://51.120.246.62:8080/song/5"));
 
     if(response.statusCode == 200) {
@@ -134,14 +167,65 @@ class _HomePageState extends State<HomePage> {
 
 
   Future<void> callBackend2() async {
+    print("load file");
+    _loadAudioFile();
+    if(_audioFile == null){
+      return;
+    }
+    print("call api upload audio");
+    File audioFile = _audioFile!;
+    List<int> fileBytes = await readAudioFileAsBytes("rec" + recNum.toString() + ".wav");
 
-    var request = http.MultipartRequest('POST', Uri.parse('https://51.120.246.62:8000/upload-audio'));
+    /*var requestBody = {
+      'audio': base64Encode(fileBytes),
+      'filename': "kendji",
+    };*/
 
-    request.files.add(await http.MultipartFile.fromPath('audio', 'rec1.wav'));
-    request.fields['name'] = 'kendji de ses morts';
+    String jsonName = "json" + recNum.toString();
 
-    var response = await request.send();
+    var requestBody = {
+      "sample_rate": 44100,
+      "channels": 1,
+      "audio": fileBytes,
+      "name": jsonName,
+      "base": base64Encode(fileBytes)
+    };
+
+    print(fileBytes);
+
+    var response = await http.post(
+      Uri.parse("http://51.120.246.62:8000/upload-json/"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(requestBody),
+    );
+
     print(response.statusCode);
+    print(response.body);
+
+    
+  }
+
+
+  Future<void> callBackend3() async {
+
+    String jsonName = "json" + recNum.toString();
+
+    var info = {
+      "name": jsonName,
+    };
+
+    final response = await http.post(
+        Uri.parse("http://51.120.246.62:8000/jsontowav/"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(info),
+    );
+
+    print(response.statusCode);
+    print(response.body);
   }
 
 
@@ -195,6 +279,10 @@ class _HomePageState extends State<HomePage> {
             ElevatedButton(
                 onPressed: () => {callBackend2()},
                 child: const Text("callAPI")
+            ),
+            ElevatedButton(
+                onPressed: () => {callBackend3()},
+                child: const Text("save to wav")
             ),
           ],
         ),
