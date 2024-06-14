@@ -3,14 +3,33 @@ from scipy import signal
 from scipy.io.wavfile import read
 from scipy.ndimage import maximum_filter
 import requests
+import warnings
 
-
-# Création de la constellation des pics significatifs
-# audio_data correspond au data du fichier .wav
-# fs correspond à la fréquence d'échantillonage
+warnings.filterwarnings("ignore")
 
 def create_peak_constellation(audio_data, Fs):
+    """
 
+    Explication :
+
+    Créer une constellation contenant les pics les plus significatifs de l'audio enregistré par l'utilisateur.
+    Pour cela la fonction effectue un spectrogramme de l'audio et utilise un filtre maximum pour trouver les pics.
+
+    ---
+
+    Paramètres :
+
+    audio_data : np.array - Les données audio enregistrées par l'utilisateur
+    Fs : int - La fréquence d'échantillonnage de l'audio
+
+    ---
+
+    Retourne :
+
+    peak_dict : dict - Un dictionnaire contenant les pics les plus significatifs de l'audio enregistré par l'utilisateur
+    Les clés sont les temps et les valeurs sont les fréquences des pics
+
+    """
     frequencies, times, Sxx = signal.spectrogram(
         audio_data, fs=Fs, nperseg=1024, noverlap=64)
 
@@ -24,7 +43,27 @@ def create_peak_constellation(audio_data, Fs):
     peak_dict = dict(sorted(peak_dict.items()))
     return peak_dict
 
-def create_data(constellation_map):
+def create_data(constellation_map, song_id=1):
+    """
+    
+    Explication :
+
+    Créer les données à envoyer au serveur pour la comparaison des fingerprints.
+    Pour cela, la fonction parcourt la constellation et crée les hashs à partir des pics.
+
+    ---
+
+    Paramètres :
+
+    constellation_map : dict - Un dictionnaire contenant les pics les plus significatifs de l'audio enregistré par l'utilisateur
+
+    ---
+
+    Retourne :
+
+    data : list - Une liste contenant les hashs à envoyer au serveur pour la comparaison des fingerprints au format JSON
+    
+    """
     data = []
 
     # On parcourt la constellation pour créer les hashs
@@ -44,11 +83,36 @@ def create_data(constellation_map):
                 "invariantComponent": invariant,
                 "variantComponent": time_diff,
                 "localisation": time,
-                "songID": 3
+                "songID": song_id
             })
     return data
 
 def send_data_in_batches(data, url,batch_size=50):
+    """
+    
+    Explication :
+
+    Envoie les données au serveur en plusieurs lots pour éviter la surcharge du serveur et améliorer la performance.
+    L'URL varie en fonction du choix de l'utilisateur (comparaison ou enregistrement).
+
+    ---
+
+    Paramètres :
+
+    data : list - Une liste contenant les hashs à envoyer au serveur pour la comparaison des fingerprints au format JSON
+    url : str - L'URL de l'API à laquelle envoyer les données
+    batch_size : int - La taille de chaque lot de données à envoyer
+
+    ---
+
+    Retourne :
+
+    all_responses : list - Une liste contenant les réponses du serveur pour chaque lot de données envoyé ()
+    Si l'URL est pour la comparaison, les réponses contiennent les correspondances des fingerprints.
+    Sinon, l'URL est pour l'enregistrement et les réponses contiennent une confirmation de l'enregistrement des fingerprints 
+    dans la base de données.
+
+    """
     all_responses = []
     headers = {
     'Content-Type': 'application/json'
@@ -59,22 +123,39 @@ def send_data_in_batches(data, url,batch_size=50):
         response = requests.post(url, json=batch, headers=headers)
 
         if response.status_code == 200:
-            print(f'Batch {i//batch_size + 1} envoyé avec succès')
-            print(f'Réponse du serveur : {response.text}')
+            # print(f'Batch {i//batch_size + 1} envoyé avec succès')
+            # print(f'Réponse du serveur : {response.text}')
 
             all_responses.append(response.json())
-        else:
-            print(f'Erreur lors de l\'envoi du batch {i//batch_size + 1}, statut: {response.status_code}')
-            print(f'Réponse du serveur : {response.text}')
+        # else:
+        #     print(f'Erreur lors de l\'envoi du batch {i//batch_size + 1}, statut: {response.status_code}')
+        #     print(f'Réponse du serveur : {response.text}')
     
     return all_responses
 
 def create_histograms(all_responses):
-    # Pour chaque reponse (indice array)
-        # Pour chaque clé de map
-            # Pour chaque pair de finger print en DB et Enregistré, faire la différence de "localisation"
-                #  Ajouter 1 à la valeur de la "localisation" de l'histogramme associé à la clé de la map
-    # Retourner la liste qui contient le nombre d'occurence de la différence de localisation par histogramme
+    """
+    
+    Explication :
+
+    Crée des histogrammes pour chaque songID en fonction des correspondances des fingerprints.
+    Les histogrammes contiennent le nombre d'occurences de la différence de localisation des fingerprints.
+
+    ---
+
+    Paramètres :
+
+    all_responses : list - Une liste contenant les réponses du serveur pour chaque lot de données envoyées.
+    all_responses contient les fingerprints qui sont en base de données et qui peuvent correspondre aux fingerprints envoyées.
+
+    ---
+
+    Retourne :
+
+    histograms : dict - Un dictionnaire contenant les histogrammes des différences de localisation des fingerprints pour chaque songID
+
+
+    """
 
     # Initialisation d'un dictionnaire pour stocker les histogrammes des différences de localisation
     histograms = {}
@@ -102,29 +183,71 @@ def create_histograms(all_responses):
     return histograms
 
 def find_best_match(histograms):
-    # Pour chaque histogramme
-        # Pour chaque clé de l'histogramme
-            # Si la valeur de la clé est supérieure à 10
-                # Ajouter la clé à la liste des candidats
-    # Retourner le candidat avec la valeur la plus élevée
+    """
+
+    Explication :
+
+    Trouve la meilleure correspondance en fonction des histogrammes des différences de localisation des fingerprints.
+    Une correspondance est considérée comme plausible si le nombre d'occurences dans un histrogramme est supérieur à 50%
+    du nombre total d'occurences de toutes les correspondances.
+
+    ---
+
+    Paramètres :
+
+    histograms : dict - Un dictionnaire contenant les histogrammes des différences de localisation des fingerprints pour chaque songID
+
+    ---
+
+    Retourne :
+
+    best_match : int - L'ID de la chanson correspondante
+
+    """
 
     best_match = None
     best_score = 0
-    seuil = 5
+    all_scores = 0
 
     for song_id, histogram in histograms.items():
         count = sum(histogram.values())
-        if count > best_score and count > seuil:
+        all_scores += count
+
+
+    for song_id, histogram in histograms.items():
+        count = sum(histogram.values())
+        if count > best_score and count > all_scores * 0.5:
             best_score = count
             best_match = song_id
 
     return best_match
 
 def get_song_info(song_id):
+    """
+    
+    Explication :
+
+    Récupère les informations de la chanson correspondante à partir de l'ID de la chanson.
+
+    ---
+
+    Paramètres :
+
+    song_id : int - L'ID de la chanson ayant la meilleure correspondance (trovée par find_best_match)
+
+    ---
+
+    Retourne :
+
+    song_info : dict - Un dictionnaire contenant les informations de la chanson correspondante
+    On retrouve le titre, l'artiste, l'album....
+
+    """
+
     headers = {
     'Content-Type': 'application/json'
     }
-    url = 'http://51.120.246.62:8080/song/'
+    url = 'http://http://51.120.246.62:8080/song/'
     response = requests.get(url=url + str(song_id),headers=headers)
 
     if response.status_code == 200:
@@ -133,6 +256,28 @@ def get_song_info(song_id):
         return None
 
 def start_process(audioPath,choice=0):
+    """
+
+    Explication :
+
+    Fonction principale pour le traitement du signal audio.
+
+    ---
+
+    Paramètres :
+
+    audioPath : str - Le chemin du fichier audio enregistré par l'utilisateur
+    choice : int - Le choix de l'administrateur (0 pour la comparaison, 1 pour l'enregistrement)
+
+    ---
+
+    Retourne :
+
+    song_info : dict - Un dictionnaire contenant les informations de la chanson correspondante
+    On retrouve le titre, l'artiste, l'album....
+
+    """
+
     # Si choice = 0, on fonctionne en comparaison
     Fs, data = read(audioPath)
     constellation = create_peak_constellation(data, Fs)
@@ -149,8 +294,8 @@ def start_process(audioPath,choice=0):
         return
 
     histograms = create_histograms(all_responses)
+    print(histograms)
     best_match = find_best_match(histograms)
     song_info = get_song_info(best_match)
-    print(song_info)
 
     return song_info
