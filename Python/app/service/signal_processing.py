@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import signal
 from scipy.io.wavfile import read
+from scipy.ndimage import maximum_filter
 import requests
 
 
@@ -9,61 +10,42 @@ import requests
 # fs correspond à la fréquence d'échantillonage
 
 def create_peak_constellation(audio_data, Fs):
-    num_peaks = 15
 
-    # On applique une STFT sur l'audio étudié
+    frequencies, times, Sxx = signal.spectrogram(
+        audio_data, fs=Fs, nperseg=1024, noverlap=64)
 
-    frequencies, times, stft = signal.stft(
-        x = audio_data, fs = Fs, nperseg= 512, nfft = 512, return_onesided=True, noverlap= 0,
-    )
-
-    constellation_map = []
-
-    for time_index, window in enumerate(stft.T):
-        # On convertit le spectre en valeur réel
-        spectrum = abs(window)
-        
-        # On identifie les pics les plus importants 
-        peaks, props = signal.find_peaks(spectrum, prominence=0, distance=21)
-
-        n_peaks = min(num_peaks, len(peaks))
-
-        largest_peaks = np.argpartition(props["prominences"], -n_peaks)[-n_peaks:]
-        for peak in peaks[largest_peaks]:
-            frequency = frequencies[peak]
-            time_in_seconds = times[time_index]
-            constellation_map.append([time_in_seconds, frequency])
-    
-    return constellation_map
+    # Utiliser un filtre maximum pour trouver les maximums locaux
+    local_max = maximum_filter(Sxx, size=(20, 20))
+    # seuil de détection des pics
+    threshold = np.percentile(local_max, 75)
+    peaks = (local_max == Sxx) & (local_max >= threshold)
+    peak_indices = np.argwhere(peaks)
+    peak_dict = {times[t]: frequencies[f] for f, t in peak_indices}
+    peak_dict = dict(sorted(peak_dict.items()))
+    return peak_dict
 
 def create_data(constellation_map):
-    upper_frequency = 23000
-    frequency_bits = 10
     data = []
 
     # On parcourt la constellation pour créer les hashs
-    for idx, (time, freq) in enumerate(constellation_map[:-1]):
+    list_keys = list(constellation_map.keys())
+    for idx, time in enumerate(list_keys[:-1]):
 
-        other_freq = constellation_map[idx + 1][1]
+        freq = constellation_map[time]
 
-        time_diff = constellation_map[idx + 1][0] - time
-        freq_diff = abs(other_freq - freq)
+        next_time = list_keys[idx + 1]
+        other_freq = constellation_map[next_time]
 
-        if time_diff <= 0 and freq_diff <= 3000 :
-            continue
+        time_diff = next_time - time
 
-        freq_binned = freq / upper_frequency * (2 ** frequency_bits)
-        other_freq_binned = other_freq / upper_frequency * (2 ** frequency_bits)
-
-        invariant = freq_binned/other_freq_binned
-
-        data.append({
-            "invariantComponent": invariant,
-            "variantComponent": time_diff,
-            "localisation": time,
-            "songID": 1
-        })
-
+        if (other_freq != 0):
+            invariant = freq/other_freq
+            data.append({
+                "invariantComponent": invariant,
+                "variantComponent": time_diff,
+                "localisation": time,
+                "songID": 3
+            })
     return data
 
 def send_data_in_batches(data, url,batch_size=50):
@@ -128,14 +110,12 @@ def find_best_match(histograms):
 
     best_match = None
     best_score = 0
-    count_offset = 10
 
     for song_id, histogram in histograms.items():
-        for local_diff, count in histogram.items():
-            if count > count_offset:
-                if count > best_score:
-                    best_score = count
-                    best_match = song_id
+        count = sum(histogram.values())
+        if count > best_score:
+            best_score = count
+            best_match = song_id
 
     return best_match
 
@@ -151,27 +131,24 @@ def get_song_info(song_id):
     else:
         return None
 
-def start_process(audioPath,choice = 0):
+def start_process(audioPath,choice=0):
     # Si choice = 0, on fonctionne en comparaison
     Fs, data = read(audioPath)
-    constellation = create_peak_constellation(data,Fs)
+    constellation = create_peak_constellation(data, Fs)
     data = create_data(constellation)
-    
-   
+
     if choice == 0:
         url = 'http://51.120.246.62:8080/fingerprint/compare/'
     else:
         url = 'http://51.120.246.62:8080/fingerprint/'
-    
-    all_responses = send_data_in_batches(data,url)
-    
-    if choice == 0:
-        histograms = create_histograms(all_responses)
-        best_match = find_best_match(histograms)
-        song_info = get_song_info(best_match)
+
+    all_responses = send_data_in_batches(data, url)
+
+    if choice == 1:
+        return
+
+    histograms = create_histograms(all_responses)
+    best_match = find_best_match(histograms)
+    song_info = get_song_info(best_match)
 
     return song_info
-
-def hello_world():
-    print("Hello World")
-    return "Hello World"
