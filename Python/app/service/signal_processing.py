@@ -126,7 +126,7 @@ def get_song_info(song_id):
     url = 'http://51.120.246.62:8080/song/'
     response = requests.get(url=url + str(song_id),headers=headers)
 
-    if response.status_code == 202:
+    if response.status_code == 200:
         return response.json()
     else:
         return None
