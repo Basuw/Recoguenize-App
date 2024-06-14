@@ -9,6 +9,7 @@ import json
 app = FastAPI()
 
 from json_to_wav import json_to_wav
+from signal_processing import start_process
 
 app = FastAPI()
 
@@ -38,7 +39,7 @@ class AudioRequest(BaseModel):
     audio: list
     name:str
     base:str
-    
+
 class Name(BaseModel):
     name: str
 
@@ -70,4 +71,4 @@ async def jsontowav(name: Name):
     json_input_path = 'samples/'+name.name+".json"
     wav_output_path = 'music/'+name.name+'.wav'
     json_to_wav(json_input_path,wav_output_path)
-    return name.name
+    return start_process('music/'+name.name+'.wav')

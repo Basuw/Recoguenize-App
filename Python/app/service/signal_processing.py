@@ -110,10 +110,11 @@ def find_best_match(histograms):
 
     best_match = None
     best_score = 0
+    seuil = 5
 
     for song_id, histogram in histograms.items():
         count = sum(histogram.values())
-        if count > best_score:
+        if count > best_score and count > seuil:
             best_score = count
             best_match = song_id
 
