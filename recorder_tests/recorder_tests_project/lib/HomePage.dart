@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
@@ -56,16 +57,16 @@ class _HomePageState extends State<HomePage> {
     return filePath;
   }
 
-  Future<Uint8List> readAudioFileAsBytes(String fileName) async {
+  Future<Int16List> readAudioFileAsBytes(String fileName) async {
     try {
       String filePath = await getFilePath(fileName);
       File audioFile = File(filePath);
       Uint8List fileBytes = await audioFile.readAsBytes();
-      return fileBytes;
+      return fileBytes.buffer.asInt16List();
     } 
     catch (e) {
       print("Error reading audio file: $e");
-      return Uint8List(0);
+      return Int16List(0);
     }
   }
 
@@ -168,13 +169,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> callBackend2() async {
     print("load file");
-    _loadAudioFile();
-    if(_audioFile == null){
-      return;
-    }
     print("call api upload audio");
-    File audioFile = _audioFile!;
-    List<int> fileBytes = await readAudioFileAsBytes("rec" + recNum.toString() + ".wav");
+    Int16List fileBytes = await readAudioFileAsBytes("rec" + recNum.toString() + ".wav");
 
     /*var requestBody = {
       'audio': base64Encode(fileBytes),
@@ -187,14 +183,11 @@ class _HomePageState extends State<HomePage> {
       "sample_rate": 44100,
       "channels": 1,
       "audio": fileBytes,
-      "name": jsonName,
-      "base": base64Encode(fileBytes)
+      "name": jsonName
     };
 
-    print(fileBytes);
-
     var response = await http.post(
-      Uri.parse("http://51.120.246.62:8000/upload-json/"),
+      Uri.parse("http://192.168.194.178:8000/upload-json/"),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -217,7 +210,7 @@ class _HomePageState extends State<HomePage> {
     };
 
     final response = await http.post(
-        Uri.parse("http://51.120.246.62:8000/jsontowav/"),
+        Uri.parse("http://192.168.194.178:8000/jsontowav/"),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -242,7 +235,7 @@ class _HomePageState extends State<HomePage> {
           children: <Widget>[
             if (isGlobalRecording) const Text('Recording in progress'),
             ElevatedButton(
-              onPressed: isGlobalRecording ? stopGlobalRecording : startGlobalRecording,     // A REMODIFIER
+              onPressed: isGlobalRecording ? stopGlobalRecording : startGlobalRecording,
               child: isGlobalRecording
                   ? const Text('press to stop')
                   : const Text('press to record'),

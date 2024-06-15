@@ -1,3 +1,5 @@
+from signal_processing import start_process
+from json_to_wav import json_to_wav
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 import shutil
@@ -8,8 +10,6 @@ import json
 
 app = FastAPI()
 
-from json_to_wav import json_to_wav
-from signal_processing import start_process
 
 app = FastAPI()
 
@@ -21,22 +21,25 @@ if not os.path.exists(UPLOAD_FOLDER):
 JSON_TO_WAV = 'json_to_wav.py'
 
 # Import de la fonction de conversion
-from json_to_wav import json_to_wav
+
 
 class AudioRequest(BaseModel):
     sample_rate: int
     channels: int
     audio: list
-    name:str
+    name: str
+
 
 class Name(BaseModel):
     name: str
 
 # start the server with the command: uvicorn main:app --reload
 
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
 
 @app.post("/upload-json/")
 async def save_json(audio_data: AudioRequest):
@@ -48,9 +51,10 @@ async def save_json(audio_data: AudioRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.post("/jsontowav/")
 async def jsontowav(name: Name):
     json_input_path = 'samples/'+name.name+".json"
     wav_output_path = 'music/'+name.name+'.wav'
-    json_to_wav(json_input_path,wav_output_path)
+    json_to_wav(json_input_path, wav_output_path)
     return start_process('music/'+name.name+'.wav')
