@@ -2,34 +2,46 @@ PODS:
   - audioplayers_darwin (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - flutter_sound (9.4.19):
+    - Flutter
+    - flutter_sound_core (= 9.4.19)
+  - flutter_sound_core (9.4.19)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - record_darwin (1.0.0):
+  - permission_handler_apple (9.1.1):
     - Flutter
-    - FlutterMacOS
 
 DEPENDENCIES:
   - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/ios`)
   - Flutter (from `Flutter`)
+  - flutter_sound (from `.symlinks/plugins/flutter_sound/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
-  - record_darwin (from `.symlinks/plugins/record_darwin/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+
+SPEC REPOS:
+  trunk:
+    - flutter_sound_core
 
 EXTERNAL SOURCES:
   audioplayers_darwin:
     :path: ".symlinks/plugins/audioplayers_darwin/ios"
   Flutter:
     :path: Flutter
+  flutter_sound:
+    :path: ".symlinks/plugins/flutter_sound/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
-  record_darwin:
-    :path: ".symlinks/plugins/record_darwin/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
   audioplayers_darwin: 877d9a4d06331c5c374595e46e16453ac7eafa40
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_sound: 97386bc7e8243e6e656aca60c26504436b1cb0c2
+  flutter_sound_core: 0f0aad8fa687993b01c2e9b188778ea47d1e99cd
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  record_darwin: 1f6619f2abac4d1ca91d3eeab038c980d76f1517
+  permission_handler_apple: e76247795d700c14ea09e3a2d8855d41ee80a2e6
 
 PODFILE CHECKSUM: 819463e6a0290f5a72f145ba7cde16e8b6ef0796
 

@@ -1,7 +1,8 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'dart:typed_data';
-
+import 'dart:convert';
+import 'dart:io';
 import 'package:avatar_glow/avatar_glow.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,8 @@ import 'package:flutter/widgets.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_sound/public/flutter_sound_recorder.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'customPopup/custom_dialog_widget.dart';
 
 import 'recorder.dart';
 
@@ -76,9 +79,15 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       });
       while(isGlobalRecording){
         recNum = await recorder.startRecording(audioRecord, audioPath, recNum);
-        await Future.delayed(const Duration(milliseconds: 1000));
+        await Future.delayed(const Duration(milliseconds: 10000));
         await recorder.stopRecording(audioRecord);
-        print("boucle "+recNum.toString());
+        bool sendCompleted = await sendWavToBack();
+        if(sendCompleted){
+          print("Getting song info");
+          var response = await getSongInfo();
+          await showInfo(context, response);
+        }
+        print("boucle $recNum");
       }
       audioPath = await dirPath;
       audioPath += "/rec";
@@ -103,6 +112,102 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
     isGlobalRecording ? stopGlobalRecording() : startGlobalRecording();
   }
 
+  Future<bool> sendWavToBack() async {
+    try {
+      print("Sending file $recNum to backend");
+      Int16List fileBytes = await readAudioFileAsBytes("rec$recNum.wav");
+
+      String jsonName = "json$recNum";
+
+      var requestBody = {
+        "sample_rate": 44100,
+        "channels": 1,
+        "audio": fileBytes,
+        "name": jsonName
+      };
+
+      var response = await http.post(
+        Uri.parse("http://192.168.194.178:8000/upload-json/"),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(requestBody),
+      );
+
+      //print(response.statusCode);
+      //print(response.body);
+      return response.statusCode == 200;
+    }
+    catch (e) {
+      print("Error sending wav file to backend: $e");
+      return false;
+    }
+  }
+
+  Future<http.Response> getSongInfo() async {
+
+    String jsonName = "json$recNum";
+
+    var info = {
+      "name": jsonName,
+    };
+
+    final response = await http.post(
+      Uri.parse("http://192.168.194.178:8000/jsontowav/"),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(info),
+    );
+
+    //print(response.statusCode);
+    //print(response.body);
+    return response;
+  }
+
+  Future<void> showInfo(BuildContext context, http.Response response) async {
+    stopGlobalRecording();
+    var json = jsonDecode(response.body);
+    String titre;
+    String artiste;
+
+    if (json == null){
+      titre = "Aucune musique trouvée :(";
+      artiste = "";
+    } else {
+      titre = json['titre'];
+      artiste = json['artiste'];
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CustomDialogWidget(
+          titre: titre,
+          artiste: artiste,
+        );
+      },
+    );
+  }
+
+  Future<Int16List> readAudioFileAsBytes(String fileName) async {
+    try {
+      String filePath = await getFilePath(fileName);
+      File audioFile = File(filePath);
+      Uint8List fileBytes = await audioFile.readAsBytes();
+      return fileBytes.buffer.asInt16List();
+    }
+    catch (e) {
+      print("Error reading audio file: $e");
+      return Int16List(0);
+    }
+  }
+
+  Future<String> getFilePath(String fileName) async {
+    Directory directory = await getApplicationDocumentsDirectory();
+    String filePath = '${directory.path}/$fileName';
+    return filePath;
+  }
 
   @override
   Widget build(BuildContext context) {

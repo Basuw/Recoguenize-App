@@ -47,10 +47,10 @@ class Recorder {
     }
   }
 
-  Future<Uint8List> loadWavFileAsBytes(String filepath) async {
-    ByteData data = await rootBundle.load(filepath);
-    Uint8List bytes = data.buffer.asUint8List();
-    return bytes;
-  }
+  //Future<Uint8List> loadWavFileAsBytes(String filepath) async {
+  //  ByteData data = await rootBundle.load(filepath);
+  //  Uint8List bytes = data.buffer.asUint8List();
+  //  return bytes;
+  //}
 
 }
