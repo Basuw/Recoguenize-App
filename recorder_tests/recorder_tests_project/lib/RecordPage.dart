@@ -175,8 +175,8 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       artiste = "";
     } else {
       stopGlobalRecording();
-      titre = json['titre'];
-      artiste = json['artiste'];
+      titre = json['title'];
+      artiste = json['artists'][0]['name'];
     }
 
     showDialog(
