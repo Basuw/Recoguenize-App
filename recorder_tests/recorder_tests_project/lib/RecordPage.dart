@@ -32,6 +32,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
   String audioPath = '';
   int recNum = 0;
   int tapNb = 0;
+  String ipAddress = '51.120.246.62';
   late AnimationController _controller;
   late Animation<double> _animation;
   Recorder recorder = Recorder();
@@ -132,7 +133,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       };
 
       var response = await http.post(
-        Uri.parse("http://192.168.194.178:8000/upload-json/"),
+        Uri.parse('http://$ipAddress:8000/upload-json/'),
         headers: {
           'Content-Type': 'application/json',
         },
@@ -158,7 +159,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
     };
 
     final response = await http.post(
-      Uri.parse("http://192.168.194.178:8000/jsontowav/"),
+      Uri.parse('http://$ipAddress:8000/jsontowav/'),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -238,66 +239,80 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFF42958f),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            if (isGlobalRecording)
-              Text(
-                'Recoguenizing...',
-                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+      body: SingleChildScrollView(
+        child : Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              if (isGlobalRecording)
+                Text(
+                  'Recoguenizing...',
+                  style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+                ),
+              if (isSearching)
+                Text(
+                  'Searching for a match...',
+                  style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+                ),
+              if (!isGlobalRecording && ! isSearching)
+                Text(
+                  'Tap to recoguenize',
+                  style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+                ),
+              SizedBox(
+                height: 40,
               ),
-            if (isSearching)
-              Text(
-                'Searching for a match...',
-                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
-              ),
-            if (!isGlobalRecording && ! isSearching)
-              Text(
-                'Tap to recoguenize',
-                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
-              ),
-            SizedBox(
-              height: 40,
-            ),
-            AvatarGlow(
-              endRadius: 200.0,
-              animate: isGlobalRecording,
-              child: GestureDetector(
-                onTapDown: tapDetection,
-                child: AnimatedBuilder(
-                  animation: _animation,
-                  child: Material(
-                    shape: CircleBorder(),
-                    elevation: 8,
-                    child: Container(
-                        padding: EdgeInsets.all(2),
-                        height: 200,
-                        width: 200,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle, color: Color(0xFFFFFFFF)),
-                        child: Image.asset(
-                          'assets/vinyle_simple.png',
-                          fit: BoxFit.cover,
-                        )
+              AvatarGlow(
+                endRadius: 200.0,
+                animate: isGlobalRecording,
+                child: GestureDetector(
+                  onTapDown: tapDetection,
+                  child: AnimatedBuilder(
+                    animation: _animation,
+                    child: Material(
+                      shape: CircleBorder(),
+                      elevation: 8,
+                      child: Container(
+                          padding: EdgeInsets.all(2),
+                          height: 200,
+                          width: 200,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle, color: Color(0xFFFFFFFF)),
+                          child: Image.asset(
+                            'assets/vinyle_simple.png',
+                            fit: BoxFit.cover,
+                          )
+                      ),
                     ),
+                    builder: (context, child) {
+                      return Transform.rotate(
+                        angle: _animation.value * 5.0 * 3.141592653589793,
+                        child: child,
+                      );
+                    },
                   ),
-                  builder: (context, child) {
-                    return Transform.rotate(
-                      angle: _animation.value * 5.0 * 3.141592653589793,
-                      child: child,
-                    );
-                  },
                 ),
               ),
-            ),
-          ],
+              Text('Entrer une adresse IP manuellement :'),
+              TextField(
+                decoration: InputDecoration(
+                  hintText: "IP vm par défaut",
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (value) {
+                  setState(() {
+                    ipAddress = value;
+                  });
+                },
+              ),
+            ],
+          ),
         ),
-      ),
+      )
     );
   }
 }
