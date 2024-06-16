@@ -166,7 +166,6 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
   }
 
   Future<void> showInfo(BuildContext context, http.Response response) async {
-    stopGlobalRecording();
     var json = jsonDecode(response.body);
     String titre;
     String artiste;
@@ -175,6 +174,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
       titre = "Aucune musique trouvée :(";
       artiste = "";
     } else {
+      stopGlobalRecording();
       titre = json['titre'];
       artiste = json['artiste'];
     }
