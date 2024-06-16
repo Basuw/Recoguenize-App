@@ -169,22 +169,42 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
     var json = jsonDecode(response.body);
     String titre;
     String artiste;
+    String album;
 
     if (json == null){
       titre = "Aucune musique trouvée :(";
       artiste = "";
+      album = "";
     } else {
       stopGlobalRecording();
       titre = json['title'];
       artiste = json['artists'][0]['name'];
+      album = json['albums'][0]['title'];
     }
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return CustomDialogWidget(
-          titre: titre,
-          artiste: artiste,
+        return AlertDialog(
+          title: Text("Musique trouvée !"),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Musique: $titre'),
+                Text('Artiste: $artiste'),
+                Text('Artiste: $album')
+                // Ajoutez d'autres informations si nécessaire
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Fermer'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
         );
       },
     );
