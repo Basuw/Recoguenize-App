@@ -28,6 +28,7 @@ class RecordPage extends StatefulWidget {
 class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateMixin {
   late AudioPlayer audioPlayer;
   bool isGlobalRecording = false;
+  bool isSearching = false;
   String audioPath = '';
   int recNum = 0;
   int tapNb = 0;
@@ -86,6 +87,9 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
           print("Getting song info");
           var response = await getSongInfo();
           await showInfo(context, response);
+          setState(() {
+            isSearching=false;
+          });
         }
         print("boucle $recNum");
       }
@@ -104,6 +108,7 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
     _controller.forward(from: _controller.value);
     setState(() {
       isGlobalRecording = false;
+      isSearching=true;
     });
 
   }
@@ -241,10 +246,21 @@ class _RecordPageState extends State<RecordPage> with SingleTickerProviderStateM
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Text(
-              isGlobalRecording ? 'Recoguenizing...' : 'Tap to Recoguenize',
-              style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
-            ),
+            if (isGlobalRecording)
+              Text(
+                'Recoguenizing...',
+                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+              ),
+            if (isSearching)
+              Text(
+                'Searching for a match...',
+                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+              ),
+            if (!isGlobalRecording && ! isSearching)
+              Text(
+                'Tap to recoguenize',
+                style: TextStyle(color: Color(0xFFfdfefc), fontSize: 30, fontFamily: 'Arial_Rounded'),
+              ),
             SizedBox(
               height: 40,
             ),
