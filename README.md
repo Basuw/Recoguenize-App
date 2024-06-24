@@ -36,7 +36,7 @@ Il est nécessaire que le smartphone et l'ordinateur utilisé pour lancer l'appl
 1. Cloner le repository git :
 
 ```bash
-git clone https://gitlab.isima.fr/sae1.shazaaam/recoguenize-backend.git
+git clone https://github.com/Basuw/Recoguenize-App.git
 ```
 
 2. Lancer docker :
